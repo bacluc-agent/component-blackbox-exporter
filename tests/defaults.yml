@@ -1,3 +1,23 @@
 # Overwrite parameters here
 
-# parameters: {...}
+parameters:
+  blackbox_exporter:
+    helmValues:
+      nodeSelector:
+        node-role.kubernetes.io/infra: ""
+      tolerations:
+        - key: node-role.kubernetes.io/infra
+          operator: Exists
+          effect: NoSchedule
+      replicas: 2
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          memory: 64Mi
+      extraEnv:
+        - name: TEST_ENV
+          value: '1'
+      deploymentAnnotations:
+        test.annotation: demo

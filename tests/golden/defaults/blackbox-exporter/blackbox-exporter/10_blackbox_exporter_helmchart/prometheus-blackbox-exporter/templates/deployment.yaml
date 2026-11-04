@@ -1,6 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    test.annotation: demo
   labels:
     app.kubernetes.io/instance: blackbox-exporter
     app.kubernetes.io/managed-by: Helm
@@ -10,7 +12,7 @@ metadata:
   name: blackbox-exporter-prometheus-blackbox-exporter
   namespace: syn-blackbox-exporter
 spec:
-  replicas: 1
+  replicas: 2
   revisionHistoryLimit: 10
   selector:
     matchLabels:
@@ -36,6 +38,9 @@ spec:
       containers:
         - args:
             - --config.file=/config/blackbox.yaml
+          env:
+            - name: TEST_ENV
+              value: '1'
           image: quay.io/prometheus/blackbox-exporter:v0.29.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
@@ -51,6 +56,12 @@ spec:
             httpGet:
               path: /-/healthy
               port: http
+          resources:
+            limits:
+              memory: 64Mi
+            requests:
+              cpu: 10m
+              memory: 32Mi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -62,8 +73,14 @@ spec:
             - mountPath: /config
               name: config
       hostNetwork: false
+      nodeSelector:
+        node-role.kubernetes.io/infra: ''
       restartPolicy: Always
       serviceAccountName: blackbox-exporter-prometheus-blackbox-exporter
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/infra
+          operator: Exists
       volumes:
         - configMap:
             name: blackbox-exporter-prometheus-blackbox-exporter
