@@ -1,3 +1,7 @@
 # Overwrite parameters here
 
-# parameters: {...}
+parameters:
+  blackbox_exporter:
+    helmValues:
+      nodeSelector:
+        node-role.kubernetes.io/infra: ""
